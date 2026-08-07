@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% block title %}Logs — LogSentry{% endblock %}
+{% block content %}
+
+<h1 class="page-title">Log Search</h1>
+<p class="page-sub">{{ total }} matching event{{ 's' if total != 1 else '' }} across all normalized sources.</p>
+
+<form class="filter-bar" method="get">
+  <select name="source">
+    <option value="">All sources</option>
+    {% for s in sources %}
+    <option value="{{ s }}" {% if s == source %}selected{% endif %}>{{ s }}</option>
+    {% endfor %}
+  </select>
+  <select name="severity">
+    <option value="">All severities</option>
+    {% for sev in ['INFO','WARNING','ERROR','CRITICAL'] %}
+    <option value="{{ sev }}" {% if sev == severity %}selected{% endif %}>{{ sev }}</option>
+    {% endfor %}
+  </select>
+  <input type="text" name="q" placeholder="search message, user, or IP…" value="{{ q }}">
+  <button class="btn" type="submit">Filter</button>
+  {% if source or severity or q %}
+  <a class="btn btn-ghost" href="{{ url_for('logs_view') }}">Clear</a>
+  {% endif %}
+</form>
+
+<div class="panel">
+  {% if logs %}
+  <table>
+    <tr>
+      <th>Timestamp</th><th>Source</th><th>Severity</th><th>Event</th><th>IP</th><th>User</th><th>Message</th>
+    </tr>
+    {% for l in logs %}
+    <tr>
+      <td>{{ l['timestamp'] }}</td>
+      <td>{{ l['source'] }}</td>
+      <td><span class="badge badge-{{ l['severity'] }}">{{ l['severity'] }}</span></td>
+      <td>{{ l['event_type'] or '—' }}</td>
+      <td class="mono-ip">{{ l['ip_address'] or '—' }}</td>
+      <td>{{ l['user'] or '—' }}</td>
+      <td class="desc-cell">{{ l['message'] }}</td>
+    </tr>
+    {% endfor %}
+  </table>
+
+  <div class="pagination">
+    {% if page > 1 %}
+    <a class="btn btn-ghost btn-sm" href="?source={{ source }}&severity={{ severity }}&q={{ q }}&page={{ page - 1 }}">← Prev</a>
+    {% endif %}
+    <span>Page {{ page }} of {{ total_pages }}</span>
+    {% if page < total_pages %}
+    <a class="btn btn-ghost btn-sm" href="?source={{ source }}&severity={{ severity }}&q={{ q }}&page={{ page + 1 }}">Next →</a>
+    {% endif %}
+  </div>
+  {% else %}
+  <div class="empty-state">
+    <div class="glyph">◇</div>
+    No log events found. Run <code>log_generator.py</code> then <code>ingest.py</code> to populate the database.
+  </div>
+  {% endif %}
+</div>
+
+{% endblock %}

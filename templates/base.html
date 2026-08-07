@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{% block title %}LogSentry{% endblock %}</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+<div class="app-shell">
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-mark">◆</span>
+      <span class="brand-name">LogSentry</span>
+    </div>
+    <nav class="tabs">
+      <a href="{{ url_for('dashboard') }}" class="tab {% if request.endpoint == 'dashboard' %}active{% endif %}">01 · Overview</a>
+      <a href="{{ url_for('logs_view') }}" class="tab {% if request.endpoint == 'logs_view' %}active{% endif %}">02 · Logs</a>
+      <a href="{{ url_for('alerts_view') }}" class="tab {% if request.endpoint == 'alerts_view' %}active{% endif %}">03 · Alerts</a>
+      <a href="{{ url_for('reports_view') }}" class="tab {% if request.endpoint == 'reports_view' %}active{% endif %}">04 · Reports</a>
+    </nav>
+  </header>
+
+  <div class="terminal-strip" aria-hidden="true">
+    <span class="prompt">logsentry@prod-web-01</span><span class="tilde"> ~ </span><span class="dollar">$</span>
+    <span class="typed-cmd">tail -f /var/log/combined.log --grep=severity:critical</span><span class="cursor">▌</span>
+  </div>
+
+  <main class="content">
+    {% block content %}{% endblock %}
+  </main>
+
+  <footer class="footer">
+    <span>LogSentry — mini SIEM demo project</span>
+    <span class="footer-dot">·</span>
+    <span>Isolation Forest anomaly detection + rule-based correlation</span>
+  </footer>
+</div>
+</body>
+</html>

@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block title %}Reports — LogSentry{% endblock %}
+{% block content %}
+
+<h1 class="page-title">Compliance Reports</h1>
+<p class="page-sub">Audit-ready HTML reports generated from retained logs and alerts — auth activity, privileged actions, incidents, retention.</p>
+
+<div class="panel">
+  <h2>Generate a new report</h2>
+  <p style="color:var(--muted); margin-top:-8px; margin-bottom:16px;">
+    Snapshots the current database into a timestamped report referencing PCI DSS / HIPAA / GDPR / SOX style sections.
+  </p>
+  <form method="post" action="{{ url_for('generate_report') }}">
+    <button class="btn" type="submit">Generate report</button>
+  </form>
+</div>
+
+<div class="panel">
+  <h2>Report history</h2>
+  {% if files %}
+  <table>
+    <tr><th>Report file</th><th></th></tr>
+    {% for f in files %}
+    <tr>
+      <td>{{ f }}</td>
+      <td><a class="btn btn-ghost btn-sm" href="{{ url_for('view_report', filename=f) }}" target="_blank">Open →</a></td>
+    </tr>
+    {% endfor %}
+  </table>
+  {% else %}
+  <div class="empty-state">
+    <div class="glyph">◇</div>
+    No reports generated yet.
+  </div>
+  {% endif %}
+</div>
+
+{% endblock %}

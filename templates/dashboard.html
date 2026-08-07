@@ -1,0 +1,122 @@
+{% extends "base.html" %}
+{% block title %}Overview — LogSentry{% endblock %}
+{% block content %}
+
+<h1 class="page-title">Overview</h1>
+<p class="page-sub">Live snapshot across all ingested log sources.</p>
+
+<div class="stat-grid">
+  <div class="stat-card">
+    <div class="label">Total Log Events</div>
+    <div class="value">{{ total_logs }}</div>
+  </div>
+  <div class="stat-card accent">
+    <div class="label">Alerts Raised</div>
+    <div class="value">{{ total_alerts }}</div>
+  </div>
+  <div class="stat-card cool">
+    <div class="label">Open Alerts</div>
+    <div class="value">{{ open_alerts }}</div>
+  </div>
+  <div class="stat-card critical">
+    <div class="label">Critical &amp; Open</div>
+    <div class="value">{{ critical_alerts }}</div>
+  </div>
+</div>
+
+<div class="two-col">
+  <div class="panel">
+    <h2>Log volume over time</h2>
+    <canvas id="volumeChart" height="110"></canvas>
+  </div>
+  <div class="panel">
+    <h2>Severity breakdown</h2>
+    <canvas id="severityChart" height="110"></canvas>
+  </div>
+</div>
+
+<div class="two-col">
+  <div class="panel">
+    <h2>Recent alerts</h2>
+    {% if recent_alerts %}
+    <table>
+      <tr><th>Severity</th><th>Type</th><th>Source IP</th><th>Description</th></tr>
+      {% for a in recent_alerts %}
+      <tr>
+        <td><span class="badge badge-{{ a['severity'] }}">{{ a['severity'] }}</span></td>
+        <td>{{ a['alert_type'] }}</td>
+        <td class="mono-ip">{{ a['source_ip'] or '—' }}</td>
+        <td class="desc-cell">{{ a['description'] }}</td>
+      </tr>
+      {% endfor %}
+    </table>
+    {% else %}
+    <div class="empty-state">
+      <div class="glyph">◇</div>
+      No alerts yet. Run <code>anomaly_detection.py</code> and <code>alerting.py</code> after ingesting logs.
+    </div>
+    {% endif %}
+    <p style="margin-top:14px;"><a href="{{ url_for('alerts_view') }}">View all alerts →</a></p>
+  </div>
+
+  <div class="panel">
+    <h2>Top log sources</h2>
+    <table>
+      <tr><th>Source</th><th>Events</th></tr>
+      {% for r in source_rows %}
+      <tr><td>{{ r['source'] }}</td><td>{{ r['c'] }}</td></tr>
+      {% endfor %}
+    </table>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.4/chart.umd.min.js"></script>
+<script>
+const mutedColor = '#8B98A5';
+const gridColor = '#232D38';
+
+Chart.defaults.font.family = "'IBM Plex Mono', monospace";
+Chart.defaults.font.size = 11;
+Chart.defaults.color = mutedColor;
+
+new Chart(document.getElementById('volumeChart'), {
+  type: 'line',
+  data: {
+    labels: {{ volume_labels|safe }},
+    datasets: [{
+      label: 'Events / hour',
+      data: {{ volume_values|safe }},
+      borderColor: '#4FD1C5',
+      backgroundColor: 'rgba(79,209,197,0.12)',
+      fill: true,
+      tension: 0.3,
+      pointRadius: 0,
+      borderWidth: 2,
+    }]
+  },
+  options: {
+    plugins: { legend: { display: false } },
+    scales: {
+      x: { grid: { color: gridColor }, ticks: { maxRotation: 0, autoSkip: true, maxTicksLimit: 8 } },
+      y: { grid: { color: gridColor }, beginAtZero: true }
+    }
+  }
+});
+
+new Chart(document.getElementById('severityChart'), {
+  type: 'doughnut',
+  data: {
+    labels: Object.keys({{ severity_counts|tojson }}),
+    datasets: [{
+      data: Object.values({{ severity_counts|tojson }}),
+      backgroundColor: ['#6B7684', '#E8C547', '#F2994A', '#F0554B', '#4FD1C5'],
+      borderWidth: 0,
+    }]
+  },
+  options: {
+    plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, padding: 14 } } },
+  }
+});
+</script>
+
+{% endblock %}

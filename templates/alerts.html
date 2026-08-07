@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% block title %}Alerts — LogSentry{% endblock %}
+{% block content %}
+
+<h1 class="page-title">Alert Queue</h1>
+<p class="page-sub">Rule-based detections (brute-force, privilege escalation) and ML-flagged anomalies, ranked by severity.</p>
+
+<div class="filter-bar">
+  <a class="btn {{ 'btn-ghost' if status_filter else '' }}" href="{{ url_for('alerts_view') }}">All ({{ (status_counts.values() | sum) if status_counts else 0 }})</a>
+  <a class="btn {{ 'btn-ghost' if status_filter != 'open' else '' }}" href="{{ url_for('alerts_view', status='open') }}">Open ({{ status_counts.get('open', 0) }})</a>
+  <a class="btn {{ 'btn-ghost' if status_filter != 'acknowledged' else '' }}" href="{{ url_for('alerts_view', status='acknowledged') }}">Acknowledged ({{ status_counts.get('acknowledged', 0) }})</a>
+  <a class="btn {{ 'btn-ghost' if status_filter != 'resolved' else '' }}" href="{{ url_for('alerts_view', status='resolved') }}">Resolved ({{ status_counts.get('resolved', 0) }})</a>
+</div>
+
+<div class="panel">
+  {% if alerts %}
+  <table>
+    <tr>
+      <th>Created</th><th>Severity</th><th>Type</th><th>Source IP</th><th>Description</th><th>Status</th><th>Actions</th>
+    </tr>
+    {% for a in alerts %}
+    <tr>
+      <td>{{ a['created_at'][:19] }}</td>
+      <td><span class="badge badge-{{ a['severity'] }}">{{ a['severity'] }}</span></td>
+      <td>{{ a['alert_type'] }}</td>
+      <td class="mono-ip">{{ a['source_ip'] or '—' }}</td>
+      <td class="desc-cell">{{ a['description'] }}</td>
+      <td><span class="badge badge-status-{{ a['status'] }}">{{ a['status'] }}</span></td>
+      <td>
+        <div class="action-row">
+          {% if a['status'] != 'acknowledged' %}
+          <form method="post" action="{{ url_for('update_alert', alert_id=a['id'], action='acknowledge') }}">
+            <button class="btn btn-ghost btn-sm" type="submit">Ack</button>
+          </form>
+          {% endif %}
+          {% if a['status'] != 'resolved' %}
+          <form method="post" action="{{ url_for('update_alert', alert_id=a['id'], action='resolve') }}">
+            <button class="btn btn-sm" type="submit">Resolve</button>
+          </form>
+          {% else %}
+          <form method="post" action="{{ url_for('update_alert', alert_id=a['id'], action='reopen') }}">
+            <button class="btn btn-ghost btn-sm" type="submit">Reopen</button>
+          </form>
+          {% endif %}
+        </div>
+      </td>
+    </tr>
+    {% endfor %}
+  </table>
+  {% else %}
+  <div class="empty-state">
+    <div class="glyph">◇</div>
+    No alerts here. Run <code>alerting.py</code> and <code>anomaly_detection.py</code> after ingesting logs.
+  </div>
+  {% endif %}
+</div>
+
+{% endblock %}

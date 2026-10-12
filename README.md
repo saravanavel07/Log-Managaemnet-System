@@ -1,123 +1,186 @@
-# LogSentry — Centralized Log Management & Anomaly Detection
+# LogSentry
 
-A mini log management platform inspired by enterprise SIEM tools (like ManageEngine EventLog Analyzer),
-built to demonstrate the full log lifecycle: **collection → parsing/normalization → storage → analysis →
-alerting → compliance reporting.**
+LogSentry is a lightweight log management and security analytics platform built with Python and Flask. It demonstrates how raw system and application logs can be ingested, normalized, stored, analyzed, and converted into actionable security insights and compliance-ready reports.
 
-Built as a self-contained Python/Flask app — no external infra (Elasticsearch/Kafka) required to run it,
-but the architecture is designed to be swapped in later.
+The project is designed as a practical, self-contained alternative to enterprise SIEM tooling, with core capabilities for log collection, anomaly detection, alerting, and reporting.
 
-## Features
+## Overview
 
-### Core
-- **Multi-source log ingestion** — parses Linux `auth.log`-style syslog, JSON app logs, and Nginx access
-  logs into one normalized schema.
-- **Centralized storage** — SQLite by default (swap for Postgres via `DATABASE_URL`).
-- **Searchable dashboard** — filter by source, severity, time range, free-text search.
-- **Log statistics** — volume over time, top sources, severity breakdown (Chart.js).
+LogSentry combines multiple layers of modern log operations into one application:
 
-### Advanced
-- **ML-based anomaly detection** — an Isolation Forest model scores login/event patterns per source IP
-  and flags outliers (e.g. abnormal failed-login bursts) that static thresholds would miss.
-- **Rule-based + ML alerting engine** — brute-force detection (N failed logins within a time window),
-  privilege-escalation correlation (failed login → sudo success from the same IP shortly after), and
-  ML-flagged anomalies all feed one alert queue.
-- **Multi-step attack correlation** — chains related events across time to detect attack sequences,
-  not just single suspicious lines.
-- **Compliance report generator** — generates an audit-ready HTML report (PCI DSS / GDPR / HIPAA-style
-  sections: authentication events, privileged actions, data access, retention summary).
-- **Synthetic log generator** — script to simulate realistic traffic + injected attack scenarios
-  (brute force, privilege escalation) for demo purposes.
+- Log ingestion from multiple sources
+- Parsing and normalization of structured and semi-structured logs
+- Centralized storage in SQLite
+- Search, filtering, and dashboard visualization
+- Rule-based and machine-learning-based alerting
+- Compliance-oriented reporting for audit use cases
+
+This repository is ideal for learning, demos, security exploration, and internal tooling prototypes.
+
+## Key Features
+
+### Log Ingestion and Normalization
+- Parses common log formats including Linux-style auth logs, JSON application logs, and Nginx access logs
+- Standardizes records into a consistent schema for downstream analysis
+- Supports centralized log storage for easier monitoring and investigation
+
+### Dashboard and Search
+- Web-based dashboard for overview metrics and operational insights
+- Logs page with filtering by source, severity, and keyword search
+- Charts and summary views for volume trends and severity distribution
+
+### Alerting
+- Detects suspicious patterns using rule-based logic
+- Correlates related events to identify potential attack sequences
+- Uses ML-based anomaly detection to flag abnormal behavior
+- Keeps alerts in a triage queue with status updates such as open, acknowledged, and resolved
+
+### Compliance Reporting
+- Generates audit-style HTML reports aligned with security and compliance themes
+- Summarizes authentication events, privileged actions, access patterns, and retention posture
+- Useful for demonstrating evidence collection and governance workflows
+
+### Synthetic Data Generation
+- Includes demo log generation to simulate real-world traffic and attack scenarios
+- Helps validate detection and reporting modules without needing production data
 
 ## Architecture
 
-```
-sample_logs/ (raw logs)
-      │
-      ▼
-  ingest.py   ── parses + normalizes ──▶  SQLite (logs table)
-      │
-      ▼
-anomaly_detection.py  (Isolation Forest over per-IP feature windows)
-      │
-      ▼
-  alerting.py   ── rule engine + ML flags ──▶  SQLite (alerts table)
-      │
-      ▼
-   app.py (Flask)  ──▶  Dashboard / Alerts / Reports (web UI)
-      │
-      ▼
-compliance_report.py  ──▶  HTML compliance report
+```text
+Sample logs / raw data
+        │
+        ▼
+   ingest.py  ──► normalized data ──► SQLite database
+        │
+        ▼
+anomaly_detection.py ──► risk/anomaly scoring
+        │
+        ▼
+  alerting.py  ──► alert queue + correlation logic
+        │
+        ▼
+    app.py (Flask) ──► dashboard, logs, reports
+        │
+        ▼
+compliance_report.py ──► HTML compliance report
 ```
 
-## Quickstart
+## Tech Stack
+
+- Python
+- Flask
+- SQLite
+- scikit-learn
+- pandas and numpy
+- Jinja2 templates
+- Chart.js for frontend visualizations
+- pytest for testing
+
+## Repository Structure
+
+```text
+Log-Managaemnet-System/
+├── app.py                     # Flask application and dashboard routes
+├── models.py                  # Database schema and connection helpers
+├── ingest.py                  # Log parsing and normalization pipeline
+├── anomaly_detection.py       # ML-based anomaly detection logic
+├── alerting.py                # Rule engine and alert generation
+├── compliance_report.py        # Compliance/report generation logic
+├── log_generator.py           # Synthetic log generator and attack simulation
+├── requirements.txt           # Python dependencies
+├── LICENSE                    # MIT license
+├── logsentry.db               # Local SQLite database
+├── static/                    # Frontend CSS/JS assets
+├── templates/                 # HTML templates for the dashboard
+├── tests/                     # Project tests
+├── README.md                  # Project documentation
+└── sample_logs/               # Generated or raw log inputs
+```
+
+## Getting Started
+
+### Prerequisites
+
+- Python 3.9+
+- pip
+- Virtual environment support
+
+### Installation
 
 ```bash
-# 1. Set up environment
+git clone https://github.com/saravanavel07/Log-Managaemnet-System.git
+cd Log-Managaemnet-System
 python3 -m venv venv
-source venv/bin/activate
+source venv/bin/activate   # On Windows: venv\Scripts\activate
 pip install -r requirements.txt
+```
 
-# 2. Generate sample logs (normal traffic + a simulated attack)
+### Run the Application
+
+```bash
+python app.py
+```
+
+Then open the application in a browser:
+
+```text
+http://localhost:5000
+```
+
+## Typical Workflow
+
+```bash
+# Generate synthetic log traffic
 python log_generator.py --events 2000 --attack brute_force
 
-# 3. Ingest logs into the database
+# Load logs into the database
 python ingest.py
 
-# 4. Run anomaly detection + alerting
+# Run anomaly detection
 python anomaly_detection.py
+
+# Trigger alert evaluation
 python alerting.py
 
-# 5. Launch the dashboard
+# Start the dashboard
 python app.py
-# Visit http://localhost:5000
 ```
 
-## Project structure
+## Application Pages
 
-```
-log-management-system/
-├── app.py                  # Flask dashboard (routes, views)
-├── models.py                # SQLite schema + DB helpers
-├── log_generator.py         # Synthetic log generator (incl. attack simulation)
-├── ingest.py                 # Parsing + normalization pipeline
-├── anomaly_detection.py      # Isolation Forest anomaly scoring
-├── alerting.py               # Rule engine + correlation + alert persistence
-├── compliance_report.py      # HTML compliance report generator
-├── templates/                # Jinja2 templates for the dashboard
-├── static/                   # CSS/JS assets
-├── sample_logs/              # Generated/raw log files live here
-├── tests/                    # Unit tests for parsing & detection logic
-└── requirements.txt
-```
+- `/` — Dashboard overview with summary cards and charts
+- `/logs` — Searchable and filterable log records
+- `/alerts` — Alert queue with severity and status management
+- `/reports` — Compliance report generation and viewing
 
-## Why these "advanced" features
+## Use Cases
 
-A basic log viewer just displays lines. This project pushes further into what a real security
-team needs:
+This project is useful for:
 
-| Feature | What it demonstrates |
-|---|---|
-| Isolation Forest anomaly detection | Applying ML to unsupervised outlier detection on operational data |
-| Multi-step correlation engine | Modeling attacker behavior as *sequences*, not isolated events |
-| Compliance report generator | Translating raw logs into audit-ready evidence |
-| Synthetic attack simulation | Reproducible test data for validating detection logic |
+- Security log analysis demos
+- Student and research projects in cybersecurity
+- SIEM and log pipeline learning
+- Internal threat-monitoring prototypes
+- Audit evidence and compliance reporting exercises
 
-## Tech stack
+## Security and Compliance Note
 
-- **Backend:** Python, Flask
-- **Storage:** SQLite (swappable for Postgres)
-- **ML:** scikit-learn (Isolation Forest)
-- **Frontend:** Jinja2 templates + Chart.js
-- **Testing:** pytest
-
-## Possible extensions
-
-- Swap SQLite for Elasticsearch/OpenSearch for full-text log search at scale
-- Stream ingestion via Kafka/Redis Streams instead of batch `ingest.py`
-- Slack/email webhook integration in `alerting.py`
-- LLM-powered natural-language query box ("show failed logins in the last hour")
+The application is intended for educational, demonstration, and prototyping use. It is not a production-grade SIEM platform and does not replace the operational controls, monitoring, and governance required in a real enterprise environment.
 
 ## License
 
-MIT — see [LICENSE](LICENSE).
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
+
+## Contributing
+
+Contributions are welcome. You can improve the codebase by:
+
+- refining detection logic
+- expanding log parsing support
+- improving UI and dashboard usability
+- adding tests for edge cases and attack scenarios
+- extending compliance reporting features
+
+## Contact
+
+For questions or collaboration opportunities, please reach out through the repository owner profile on GitHub.

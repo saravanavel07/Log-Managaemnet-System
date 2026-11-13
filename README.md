@@ -1,6 +1,12 @@
 # LogSentry
 
-LogSentry is a lightweight log management and security analytics platform built with Python and Flask. It demonstrates how raw system and application logs can be ingested, normalized, stored, analyzed, and converted into actionable security insights and compliance-ready reports.
+<p align="center">
+  <a href="https://github.com/DenverCoder1/readme-typing-svg">
+    <img src="https://readme-typing-svg.demolab.com?font=Fira+Code&size=20&duration=2800&pause=800&color=36BCF7&center=true&vCenter=true&width=760&lines=Live+log+ingestion+and+normalization;Spot+unusual+activity+with+anomaly+detection;Turn+security+events+into+actionable+alerts;Explore+your+logs+in+the+LogSentry+dashboard" alt="Animated text: LogSentry live log analytics" />
+  </a>
+</p>
+
+LogSentry is a lightweight log management and security analytics platform built with Python and Flask. It demonstrates how raw system and application logs can be ingested, normalized, stored, analyzed, and presented through an interactive dashboard.
 
 The project is designed as a practical, self-contained alternative to enterprise SIEM tooling, with core capabilities for log collection, anomaly detection, alerting, and reporting.
 
@@ -85,16 +91,16 @@ Log-Managaemnet-System/
 ├── ingest.py                  # Log parsing and normalization pipeline
 ├── anomaly_detection.py       # ML-based anomaly detection logic
 ├── alerting.py                # Rule engine and alert generation
-├── compliance_report.py        # Compliance/report generation logic
+├── compliance_report.py       # Compliance/report generation logic
 ├── log_generator.py           # Synthetic log generator and attack simulation
 ├── requirements.txt           # Python dependencies
 ├── LICENSE                    # MIT license
 ├── logsentry.db               # Local SQLite database
 ├── static/                    # Frontend CSS/JS assets
 ├── templates/                 # HTML templates for the dashboard
-├── tests/                     # Project tests
-├── README.md                  # Project documentation
-└── sample_logs/               # Generated or raw log inputs
+├── tests/                      # Project tests
+├── README.md                   # Project documentation
+└── sample_logs/                # Generated or raw log inputs
 ```
 
 ## Getting Started
@@ -165,7 +171,7 @@ This project is useful for:
 
 ## Security and Compliance Note
 
-The application is intended for educational, demonstration, and prototyping use. It is not a production-grade SIEM platform and does not replace the operational controls, monitoring, and governance required in a real enterprise environment.
+The application is intended for educational, demonstration, and prototyping use. It is not a production-grade SIEM platform and does not replace the operational controls, monitoring, and governance required for real-world environments.
 
 ## License
 
